@@ -1,0 +1,36 @@
+{
+  "project": "Zero-Trust Personal Health Agent",
+  "base": "google-ai-edge/gallery",
+  "platform": "Android (Kotlin/Compose)",
+  "skills": [
+    {
+      "id": "vision_triage",
+      "name": "Medical Vision Triage",
+      "path": ".adgents/skills/vision_triage.md",
+      "description": "Logic for skin, eye, and lab report analysis."
+    },
+    {
+      "id": "thinking_mode",
+      "name": "Transparent Reasoning",
+      "path": ".adgents/skills/thinking_mode.md",
+      "description": "Rules for clinical logic stream and trust building."
+    },
+    {
+      "id": "privacy_zero_trust",
+      "name": "Zero-Trust Privacy",
+      "path": ".adgents/skills/zero_trust_privacy.md",
+      "description": "Local-only processing constraints."
+    },
+    {
+      "id": "editorial_calm_ui",
+      "name": "Editorial Calm Design System",
+      "path": ".adgents/skills/editorial_calm_ui.md",
+      "description": "Premium medical UI/UX design tokens."
+    }
+  ],
+  "context_directives": [
+    "Always reference .adgents/skills/ when discussing features.",
+    "Maintain the Editorial Calm aesthetic in all UI modifications.",
+    "Enforce on-device-only logic for all analysis steps."
+  ]
+}

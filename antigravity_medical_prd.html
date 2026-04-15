@@ -1,0 +1,740 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .prd-root {
+    font-family: 'Syne', var(--font-sans), sans-serif;
+    color: var(--color-text-primary);
+    max-width: 900px;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .prd-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .prd-eyebrow::after {
+    content: '';
+    flex: 1;
+    height: 0.5px;
+    background: var(--color-border-tertiary);
+  }
+
+  .prd-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.4rem;
+  }
+  .prd-title em {
+    font-style: italic;
+    color: var(--color-text-secondary);
+  }
+
+  .prd-subtitle {
+    font-size: 15px;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 1rem 0 2.5rem;
+  }
+
+  .meta-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+  }
+  .meta-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 100px;
+    border: 0.5px solid var(--color-border-secondary);
+    color: var(--color-text-secondary);
+    background: var(--color-background-secondary);
+  }
+  .meta-badge.accent {
+    background: #EAF3DE;
+    color: #27500A;
+    border-color: #C0DD97;
+  }
+
+  .section {
+    margin-bottom: 3rem;
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-tertiary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label .num {
+    font-size: 10px;
+    color: var(--color-text-tertiary);
+  }
+
+  .section-h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    font-weight: 400;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+
+  .prose {
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--color-text-secondary);
+    max-width: 680px;
+  }
+
+  .pillar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    margin-top: 1.5rem;
+  }
+
+  .pillar-card {
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    padding: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .pillar-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2.5px;
+    border-radius: 2px 2px 0 0;
+  }
+  .pillar-card.teal::before { background: #1D9E75; }
+  .pillar-card.purple::before { background: #7F77DD; }
+  .pillar-card.amber::before { background: #EF9F27; }
+  .pillar-card.coral::before { background: #D85A30; }
+
+  .pillar-icon {
+    font-size: 22px;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .pillar-title {
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+  .pillar-desc {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  .repo-map {
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius-lg);
+    border: 0.5px solid var(--color-border-tertiary);
+    padding: 1.25rem;
+    margin-top: 1.5rem;
+  }
+  .repo-map-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    margin-bottom: 1rem;
+    letter-spacing: 0.06em;
+  }
+  .repo-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+  }
+  .repo-row:last-child { border-bottom: none; }
+  .repo-component {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #0F6E56;
+    background: #E1F5EE;
+    border-radius: 4px;
+    padding: 2px 8px;
+    white-space: nowrap;
+    min-width: 190px;
+    flex-shrink: 0;
+  }
+  .repo-use {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+  }
+
+  .feature-list {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .feature-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 1rem 1.25rem;
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .feature-item:hover {
+    border-color: var(--color-border-primary);
+  }
+  .feature-item.expanded {
+    border-color: var(--color-border-secondary);
+  }
+
+  .feature-priority {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 100px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .p1 { background: #FCEBEB; color: #A32D2D; border: 0.5px solid #F09595; }
+  .p2 { background: #FAEEDA; color: #854F0B; border: 0.5px solid #FAC775; }
+  .p3 { background: #E6F1FB; color: #185FA5; border: 0.5px solid #85B7EB; }
+
+  .feature-body { flex: 1; }
+  .feature-name {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .feature-tagline {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+  }
+  .feature-detail {
+    display: none;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 0.5px solid var(--color-border-tertiary);
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    line-height: 1.65;
+  }
+  .feature-item.expanded .feature-detail {
+    display: block;
+  }
+  .feature-chevron {
+    color: var(--color-text-tertiary);
+    font-size: 12px;
+    transition: transform 0.15s;
+    margin-top: 3px;
+    flex-shrink: 0;
+  }
+  .feature-item.expanded .feature-chevron {
+    transform: rotate(90deg);
+  }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-top: 1.5rem;
+  }
+  .kpi-card {
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius-md);
+    padding: 1rem;
+    text-align: center;
+  }
+  .kpi-val {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.8rem;
+    font-weight: 400;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .kpi-label {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+  }
+
+  .phase-timeline {
+    margin-top: 1.5rem;
+    position: relative;
+    padding-left: 24px;
+  }
+  .phase-timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 8px;
+    bottom: 8px;
+    width: 0.5px;
+    background: var(--color-border-secondary);
+  }
+  .phase-item {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+  .phase-dot {
+    position: absolute;
+    left: -20px;
+    top: 6px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    border: 0.5px solid var(--color-border-secondary);
+    background: var(--color-background-primary);
+  }
+  .phase-dot.active {
+    background: #1D9E75;
+    border-color: #1D9E75;
+  }
+  .phase-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .phase-name {
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .phase-duration {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+  }
+  .phase-items {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+  }
+  .phase-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 100px;
+    margin-right: 4px;
+    margin-bottom: 3px;
+  }
+  .tag-build { background: #EEEDFE; color: #534AB7; }
+  .tag-test { background: #FAEEDA; color: #854F0B; }
+  .tag-ship { background: #EAF3DE; color: #3B6D11; }
+
+  .risk-table {
+    margin-top: 1.5rem;
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .risk-table th {
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-tertiary);
+    padding: 0 12px 10px 0;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    font-weight: 400;
+  }
+  .risk-table td {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    padding: 10px 12px 10px 0;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .risk-table tr:last-child td { border-bottom: none; }
+  .risk-level {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+  .risk-high { background: #FCEBEB; color: #A32D2D; }
+  .risk-med { background: #FAEEDA; color: #854F0B; }
+  .risk-low { background: #EAF3DE; color: #3B6D11; }
+
+  .footer-note {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 0.5px solid var(--color-border-tertiary);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .footer-disclaimer {
+    font-size: 12px;
+    color: var(--color-text-tertiary);
+    line-height: 1.6;
+  }
+  .footer-ask-btn {
+    margin-top: 1rem;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    padding: 8px 16px;
+    border-radius: var(--border-radius-md);
+    border: 0.5px solid var(--color-border-secondary);
+    background: transparent;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .footer-ask-btn:hover { background: var(--color-background-secondary); }
+
+  .divider {
+    height: 0.5px;
+    background: var(--color-border-tertiary);
+    margin: 2.5rem 0;
+  }
+</style>
+
+<div class="prd-root">
+  <h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Product Requirements Document: Antigravity — Zero-Trust Personal Medical and Diagnostic Analysis app built on google-ai-edge/gallery</h2>
+
+  <div class="prd-eyebrow">
+    <span>PRD · v1.0 · Confidential</span>
+  </div>
+
+  <h1 class="prd-title">Antigravity<br><em>Zero-Trust Health Agent</em></h1>
+  <p class="prd-subtitle">A fully offline, on-device personal medical companion for symptom analysis, document translation, and diagnostic support — built on the <code style="font-size:13px;background:var(--color-background-secondary);padding:1px 6px;border-radius:4px;">google-ai-edge/gallery</code> foundation.</p>
+
+  <div class="meta-strip">
+    <span class="meta-badge">Platform: Android (API 26+)</span>
+    <span class="meta-badge">Base: google-ai-edge/gallery</span>
+    <span class="meta-badge">Model: Gemma 3 / PaliGemma 2</span>
+    <span class="meta-badge">Horizon: 12 months</span>
+    <span class="meta-badge accent">✦ Zero cloud dependency</span>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="section">
+    <div class="section-label"><span class="num">01</span> Problem statement</div>
+    <h2 class="section-h2">Trust is the missing feature</h2>
+    <p class="prose">People desperately want AI to help them understand their symptoms and decipher opaque medical paperwork — but they will not upload photos of their skin, their eyes, or their private lab reports to a startup's server. The fear is rational and the bottleneck is real. Existing health apps either demand cloud connectivity (destroying trust) or offer only superficial chatbot experiences (destroying utility). Antigravity eliminates the dichotomy entirely: every byte of data is processed locally, on hardware the user already owns and controls.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 2 -->
+  <div class="section">
+    <div class="section-label"><span class="num">02</span> Strategic pillars</div>
+    <h2 class="section-h2">Four promises, kept on-device</h2>
+    <div class="pillar-grid">
+      <div class="pillar-card teal">
+        <span class="pillar-icon">🔒</span>
+        <div class="pillar-title">Radical privacy</div>
+        <p class="pillar-desc">No server. No account. No telemetry. The model, the data, and the inference all live on the user's phone.</p>
+      </div>
+      <div class="pillar-card purple">
+        <span class="pillar-icon">👁</span>
+        <div class="pillar-title">Multimodal perception</div>
+        <p class="pillar-desc">On-device vision understands skin photos, eye images, handwritten prescriptions, and multi-page lab reports — natively.</p>
+      </div>
+      <div class="pillar-card amber">
+        <span class="pillar-icon">🧠</span>
+        <div class="pillar-title">Explainable reasoning</div>
+        <p class="pillar-desc">Thinking Mode surfaces the model's step-by-step logic. Users see how conclusions were reached — not just what they are.</p>
+      </div>
+      <div class="pillar-card coral">
+        <span class="pillar-icon">⚠️</span>
+        <div class="pillar-title">Responsible guardrails</div>
+        <p class="pillar-desc">Structured outputs always end with a "see a professional" footer. The app informs; it never prescribes.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 3 -->
+  <div class="section">
+    <div class="section-label"><span class="num">03</span> Repository leverage map</div>
+    <h2 class="section-h2">How gallery becomes Antigravity</h2>
+    <p class="prose">Every feature is architected as an extension of an existing gallery capability — no forks, no rewrites.</p>
+
+    <div class="repo-map">
+      <div class="repo-map-title">google-ai-edge/gallery component → Antigravity usage</div>
+      <div class="repo-row">
+        <span class="repo-component">AskImage pipeline</span>
+        <span class="repo-use">Multimodal triage — user photographs a skin lesion, eye, or physical document; gallery's vision pipeline parses it entirely on-device.</span>
+      </div>
+      <div class="repo-row">
+        <span class="repo-component">Agent Skills framework</span>
+        <span class="repo-use">Specialized local skill modules: Skin Triage Skill, Eye Screen Skill, Prescription Translator Skill, Lab Report Decoder Skill.</span>
+      </div>
+      <div class="repo-row">
+        <span class="repo-component">Thinking Mode</span>
+        <span class="repo-use">Exposes chain-of-thought reasoning on every medical analysis — users can audit the model's logic before acting on output.</span>
+      </div>
+      <div class="repo-row">
+        <span class="repo-component">Gemma 3n model loader</span>
+        <span class="repo-use">Primary text + reasoning backbone. PaliGemma 2 loaded as second model slot for specialist vision tasks.</span>
+      </div>
+      <div class="repo-row">
+        <span class="repo-component">Offline vector store</span>
+        <span class="repo-use">Bundled offline medical reference database (ICD-11 subset, drug interaction index) stored as on-device embeddings.</span>
+      </div>
+      <div class="repo-row">
+        <span class="repo-component">Summarize pipeline</span>
+        <span class="repo-use">Powers the "Explain my report" workflow: user drops in a PDF or photo of a lab result and receives a plain-language summary.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 4 -->
+  <div class="section">
+    <div class="section-label"><span class="num">04</span> Feature backlog</div>
+    <h2 class="section-h2">Prioritised requirements</h2>
+    <p class="prose">Click any feature to expand its acceptance criteria and implementation notes.</p>
+
+    <div class="feature-list" id="features"></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 5 -->
+  <div class="section">
+    <div class="section-label"><span class="num">05</span> Success metrics</div>
+    <h2 class="section-h2">Definition of done</h2>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-val">0</div>
+        <div class="kpi-label">Bytes of user data sent off-device</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-val">&lt;6s</div>
+        <div class="kpi-label">Time to first analysis result (cold start)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-val">4.5+</div>
+        <div class="kpi-label">Target trust score in post-session survey</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-val">100%</div>
+        <div class="kpi-label">Outputs include "see a professional" disclaimer</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-val">&lt;3GB</div>
+        <div class="kpi-label">Total on-device storage including all models</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 6 -->
+  <div class="section">
+    <div class="section-label"><span class="num">06</span> Delivery roadmap</div>
+    <h2 class="section-h2">12-month phased plan</h2>
+
+    <div class="phase-timeline">
+      <div class="phase-item">
+        <div class="phase-dot active"></div>
+        <div class="phase-header">
+          <span class="phase-name">Phase 1 — Foundation</span>
+          <span class="phase-duration">Months 1–3</span>
+        </div>
+        <div class="phase-items">
+          <span class="phase-tag tag-build">build</span>Fork gallery, integrate Gemma 3n + PaliGemma 2 model loader. Implement zero-network policy (no internet permission). Build Prescription Translator and Lab Report Decoder skills. Basic Thinking Mode toggle.
+        </div>
+      </div>
+      <div class="phase-item">
+        <div class="phase-dot"></div>
+        <div class="phase-header">
+          <span class="phase-name">Phase 2 — Vision Skills</span>
+          <span class="phase-duration">Months 4–6</span>
+        </div>
+        <div class="phase-items">
+          <span class="phase-tag tag-build">build</span>Skin Triage Skill with structured ABCDE output. Eye Screen Skill (redness, discharge, structural anomalies). Image capture UX with guidance overlays. Bundled offline ICD-11 reference store.
+          <br><span class="phase-tag tag-test">test</span>Medical accuracy review with licensed clinicians. Red-team adversarial image inputs.
+        </div>
+      </div>
+      <div class="phase-item">
+        <div class="phase-dot"></div>
+        <div class="phase-header">
+          <span class="phase-name">Phase 3 — Agent & UX Polish</span>
+          <span class="phase-duration">Months 7–9</span>
+        </div>
+        <div class="phase-items">
+          <span class="phase-tag tag-build">build</span>Multi-step agentic workflow: image → cross-reference offline DB → structured summary. Symptom history timeline (local encrypted storage). Emergency escalation screen (calls 112/999 — only outbound action permitted).
+          <span class="phase-tag tag-test">test</span>Usability study with 50 participants across literacy levels.
+        </div>
+      </div>
+      <div class="phase-item">
+        <div class="phase-dot"></div>
+        <div class="phase-header">
+          <span class="phase-name">Phase 4 — Launch & Compliance</span>
+          <span class="phase-duration">Months 10–12</span>
+        </div>
+        <div class="phase-items">
+          <span class="phase-tag tag-ship">ship</span>Regulatory classification review (CE Class I / FDA Software as Medical Device wellness tier). Privacy audit. Play Store listing emphasising zero-data architecture. Press & community launch.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 7 -->
+  <div class="section">
+    <div class="section-label"><span class="num">07</span> Risks & mitigations</div>
+    <h2 class="section-h2">What could go wrong</h2>
+    <table class="risk-table">
+      <thead>
+        <tr>
+          <th style="width:30%">Risk</th>
+          <th style="width:12%">Level</th>
+          <th>Mitigation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Model hallucinates a dangerous medical conclusion</td>
+          <td><span class="risk-level risk-high">High</span></td>
+          <td>Structured output schema enforces uncertainty ranges. All outputs append mandatory "consult a professional" notice. Clinical red-team testing in Phase 2.</td>
+        </tr>
+        <tr>
+          <td>On-device model too slow on low-end hardware</td>
+          <td><span class="risk-level risk-med">Medium</span></td>
+          <td>Ship a "lite" model profile (Gemma 2B) for devices with &lt;6GB RAM. Stream progressive tokens to avoid perceived latency.</td>
+        </tr>
+        <tr>
+          <td>Regulatory misclassification as a medical device</td>
+          <td><span class="risk-level risk-med">Medium</span></td>
+          <td>Scope all claims to "educational awareness" not "diagnosis". Legal review before Phase 4 launch.</td>
+        </tr>
+        <tr>
+          <td>User acts on output instead of seeking care</td>
+          <td><span class="risk-level risk-high">High</span></td>
+          <td>Mandatory friction screen before analysis: "I understand this is not a medical diagnosis." Emergency escalation button always visible.</td>
+        </tr>
+        <tr>
+          <td>Storage footprint exceeds user tolerance</td>
+          <td><span class="risk-level risk-low">Low</span></td>
+          <td>Modular skill downloads — users install only the skills they need. Core app + one skill targets &lt;1.5 GB.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="footer-note">
+    <div>
+      <div class="footer-disclaimer">This PRD is a product planning document, not a medical opinion. Antigravity does not diagnose disease. All feature descriptions involving medical inference require clinical review and appropriate regulatory classification before shipping.</div>
+      <button class="footer-ask-btn" onclick="sendPrompt('Can you expand the technical architecture for the Skin Triage Agent Skill in Antigravity?')">Expand technical architecture ↗</button>
+      <button class="footer-ask-btn" style="margin-left:8px" onclick="sendPrompt('Write user stories for Antigravity Phase 1 features')">Generate user stories ↗</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const features = [
+  {
+    name: "Prescription Translator",
+    priority: "P1",
+    tagline: "Converts handwritten or printed prescriptions into plain-language dosage instructions",
+    detail: "User photographs a prescription. PaliGemma 2 extracts text via on-device OCR. Gemma 3n maps drug names against the bundled offline reference and outputs: drug name, dosage, frequency, common side-effects, and a flag if any interactions are detected with previously entered medications. Output is structured JSON rendered as a clean card. Acceptance: correctly parses ≥90% of legible prescriptions in usability testing."
+  },
+  {
+    name: "Lab Report Decoder",
+    priority: "P1",
+    tagline: "Translates CBC, metabolic panel, and lipid report values into accessible explanations",
+    detail: "Extends the gallery Summarize pipeline. User photographs or imports a PDF of a lab report. The model identifies each marker, compares it to reference ranges (bundled ICD-11 data), and generates a plain-English summary with traffic-light flagging (normal / borderline / out-of-range). Thinking Mode is enabled by default on this skill. Acceptance: 0 instances of a flagged-safe value being shown as out-of-range after Phase 2 clinical review."
+  },
+  {
+    name: "Skin Triage Skill",
+    priority: "P1",
+    tagline: "ABCDE-structured analysis of photographed skin lesions or rashes",
+    detail: "Leverages AskImage + PaliGemma 2 vision. Outputs a structured ABCDE checklist (Asymmetry, Border, Colour, Diameter, Evolution) with per-criterion confidence indicators. Never uses the word 'melanoma' or any specific diagnosis — instead surfaces 'features that may warrant a dermatology review.' Image capture UX guides correct framing and lighting before capture. Acceptance: passes clinical red-team review; 0 false negatives on a held-out set of 50 annotated high-risk images."
+  },
+  {
+    name: "Eye Screen Skill",
+    priority: "P2",
+    tagline: "Detects visible indicators of redness, discharge, or structural irregularities",
+    detail: "Companion vision skill to Skin Triage. Analyses photos of the open eye for: scleral redness severity, discharge presence, eyelid irregularities, and pupil asymmetry. Outputs a symptom summary and duration-based urgency hint (e.g., 'if redness persists beyond 48h, see a professional'). Acceptance: ≥85% concordance with optometrist baseline review on 30-image test set."
+  },
+  {
+    name: "Thinking Mode — Medical",
+    priority: "P1",
+    tagline: "Surfaces the model's chain-of-thought for every health analysis",
+    detail: "Extends gallery's existing Thinking Mode. In the medical context, the reasoning trace is shown under an expandable 'How I reached this' panel. The trace includes: observations extracted from the image, reference values consulted from the offline DB, and confidence qualifiers. Users can collapse the trace if not needed. Acceptance: 100% of analysis outputs include a populated reasoning trace; trace renders in &lt;500ms after main output."
+  },
+  {
+    name: "Symptom History Timeline",
+    priority: "P2",
+    tagline: "Encrypted local log of past sessions the user can share with a clinician",
+    detail: "All session outputs are optionally saved to an on-device encrypted store (AES-256, key stored in Android Keystore). The timeline view shows date, skill used, and output summary. User can export as a PDF for sharing with a GP — this is the only path data leaves the device and it is entirely user-initiated. Acceptance: export produces a legible, dated PDF; no data written to Keystore without explicit user opt-in."
+  },
+  {
+    name: "Emergency Escalation Button",
+    priority: "P1",
+    tagline: "Always-visible shortcut to emergency services — the only permitted outbound action",
+    detail: "A persistent floating button on all analysis screens. Tapping it opens a confirmation dialog and then places a call to the regional emergency number (112/999/911, detected from SIM locale). This is the only action in the app that uses a device permission beyond camera and storage. Acceptance: button is reachable within 2 taps from any screen; call completes correctly in QA on 5 physical devices."
+  },
+  {
+    name: "Modular Skill Installer",
+    priority: "P3",
+    tagline: "Downloadable skill packs so users install only what they need",
+    detail: "Core app ships with Prescription Translator and Thinking Mode (~1.2 GB). Additional skills (Skin Triage, Eye Screen, Lab Decoder) are downloadable from the Play Store as app bundles. Each skill pack bundles its specialist model weights and reference data. Acceptance: total storage for all skills &lt;3 GB; skill install/uninstall completes without restarting the app."
+  }
+];
+
+const container = document.getElementById('features');
+
+features.forEach((f, i) => {
+  const el = document.createElement('div');
+  el.className = 'feature-item';
+  el.innerHTML = `
+    <span class="feature-priority ${f.priority.toLowerCase()}">${f.priority}</span>
+    <div class="feature-body">
+      <div class="feature-name">${f.name}</div>
+      <div class="feature-tagline">${f.tagline}</div>
+      <div class="feature-detail">${f.detail}</div>
+    </div>
+    <span class="feature-chevron">▶</span>
+  `;
+  el.addEventListener('click', () => el.classList.toggle('expanded'));
+  container.appendChild(el);
+});
+</script>
