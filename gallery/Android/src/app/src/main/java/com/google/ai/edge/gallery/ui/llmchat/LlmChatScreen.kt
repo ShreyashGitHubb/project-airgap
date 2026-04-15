@@ -40,9 +40,11 @@ import com.google.ai.edge.gallery.data.MedicalSkillIds
 import com.google.ai.edge.gallery.data.MedicalSkillsProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.os.bundleOf
-import com.google.ai.edge.gallery.GalleryEvent
+import com.google.ai.edge.gallery.ui.common.chat.MedicalVisionGuide
 import com.google.ai.edge.gallery.R
 import com.google.ai.edge.gallery.data.BuiltInTaskId
 import com.google.ai.edge.gallery.data.Model
@@ -100,6 +102,7 @@ fun LlmChatScreen(
     showAudioPicker = showAudioPicker,
     composableAboveMessageList = { model ->
       val currentSkill by viewModel.currentMedicalSkill.collectAsState()
+      val task = modelManagerViewModel.getTaskById(id = taskId)!!
       LazyRow(
         modifier = Modifier
           .fillMaxWidth()
@@ -130,7 +133,6 @@ fun LlmChatScreen(
     composableAboveInput = {
       val currentSkill by viewModel.currentMedicalSkill.collectAsState()
       val uiState by viewModel.uiState.collectAsState()
-      val messages = uiState.messagesByModel[modelManagerViewModel.uiState.value.selectedModel.name] ?: listOf()
       
       // Show vision guide if a medical vision skill is selected and the model is not currently processing
       if (!uiState.inProgress && (currentSkill.id == MedicalSkillIds.SYMPTOM_CHECKER || currentSkill.id == MedicalSkillIds.LAB_ANALYST)) {
@@ -238,6 +240,7 @@ fun ChatViewWrapper(
   showImagePicker: Boolean = false,
   showAudioPicker: Boolean = false,
   composableAboveInput: @Composable () -> Unit = {},
+  composableAboveMessageList: @Composable (Model) -> Unit = {},
 ) {
   val context = LocalContext.current
   val task = modelManagerViewModel.getTaskById(id = taskId)!!
@@ -340,5 +343,6 @@ fun ChatViewWrapper(
     sendMessageTrigger = sendMessageTrigger,
     showAudioPicker = showAudioPicker,
     composableAboveInput = composableAboveInput,
+    composableAboveMessageList = composableAboveMessageList,
   )
 }

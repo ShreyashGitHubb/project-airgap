@@ -401,7 +401,14 @@ fun ChatPanel(
                                       .trim()
 
                                   if (cleanedText.isNotEmpty()) {
-                                      MessageBodyText(message = message.copy(content = cleanedText), inProgress = uiState.inProgress)
+                                      val cleanedMessage = ChatMessageText(
+                                          content = cleanedText,
+                                          side = message.side,
+                                          latencyMs = message.latencyMs,
+                                          accelerator = message.accelerator,
+                                          hideSenderLabel = message.hideSenderLabel
+                                      )
+                                      MessageBodyText(message = cleanedMessage, inProgress = uiState.inProgress)
                                   }
                                   
                                   if (report != null) {

@@ -97,11 +97,7 @@ fun MessageBodyThinking(thinkingText: String, inProgress: Boolean) {
         MarkdownText(
           text = thinkingText,
           smallFontSize = true,
-          textColor = MaterialTheme.colorScheme.onSurfaceVariant,
-          style = MaterialTheme.typography.bodySmall.copy(
-            fontFamily = FontFamily.Monospace,
-            lineHeight = 18.sp
-          )
+          textColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
       }
     }

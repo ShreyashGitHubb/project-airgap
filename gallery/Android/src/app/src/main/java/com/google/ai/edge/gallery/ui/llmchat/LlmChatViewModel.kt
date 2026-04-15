@@ -65,7 +65,7 @@ open class LlmChatViewModelBase() : ChatViewModel() {
     resetSession(
       task = task,
       model = model,
-      systemInstruction = Contents.newBuilder().addText(skill.systemPrompt).build(),
+      systemInstruction = Contents.of(listOf(com.google.ai.edge.litertlm.Content.Text(skill.systemPrompt))),
       supportImage = supportImage,
       supportAudio = supportAudio
     )
