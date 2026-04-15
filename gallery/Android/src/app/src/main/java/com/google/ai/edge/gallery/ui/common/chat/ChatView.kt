@@ -110,6 +110,7 @@ fun ChatView(
   onSystemPromptChanged: (String) -> Unit = {},
   sendMessageTrigger: SendMessageTrigger? = null,
   composableAboveInput: @Composable () -> Unit = {},
+  composableAboveMessageList: @Composable (Model) -> Unit = {},
 ) {
   val uiState by viewModel.uiState.collectAsState()
   val modelManagerUiState by modelManagerViewModel.uiState.collectAsState()
@@ -248,6 +249,7 @@ fun ChatView(
                 showAudioPicker = showAudioPicker,
                 emptyStateComposable = emptyStateComposable,
                 composableAboveInput = composableAboveInput,
+                composableAboveMessageList = composableAboveMessageList,
               )
             // Model download
             false ->

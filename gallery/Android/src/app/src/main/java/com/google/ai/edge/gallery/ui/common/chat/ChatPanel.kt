@@ -122,6 +122,7 @@ fun ChatPanel(
   showAudioPicker: Boolean = false,
   emptyStateComposable: @Composable (Model) -> Unit = {},
   composableAboveInput: @Composable () -> Unit = {},
+  composableAboveMessageList: @Composable (Model) -> Unit = {},
 ) {
   val uiState by viewModel.uiState.collectAsState()
   val modelManagerUiState by modelManagerViewModel.uiState.collectAsState()
@@ -268,6 +269,9 @@ fun ChatPanel(
     Column(
       modifier = modifier.padding(innerPadding).consumeWindowInsets(innerPadding).imePadding()
     ) {
+      // Slot for content above the message list (e.g. Skill Selector)
+      composableAboveMessageList(selectedModel)
+
       Box(contentAlignment = Alignment.BottomCenter, modifier = Modifier.weight(1f)) {
         val cdChatPanel = stringResource(R.string.cd_chat_panel)
         LazyColumn(
