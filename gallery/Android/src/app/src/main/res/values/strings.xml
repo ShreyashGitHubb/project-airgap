@@ -25,7 +25,7 @@
   <string name="aicore_image_limit_message" translatable="false">The current model can only support 1 image per chat. To ask about another image, create a new chat.</string>
   <string name="aichat_initializing_title" translatable="false">Initializing model</string>
   <string name="aichat_initializing_content" translatable="false">Sit tight, this can take up to 1 minute</string>
-  <string name="app_intro" translatable="false">Explore a world of amazing on-device models from</string>
+  <string name="app_intro" translatable="false">Your secure, on-device clinical analyst. Delivering local, zero-trust medical intelligence without data ever leaving your device.</string>
   <string name="app_name" translatable="false">Project Airgap</string>
   <string name="app_name_first_part" translatable="false">Project</string>
   <string name="app_name_second_part" translatable="false">Airgap</string>
@@ -48,13 +48,13 @@
   <string name="model_list_experimental_label" translatable="false">EXPERIMENTAL</string>
   <string name="cancel" translatable="false">Cancel</string>
   <string name="category_unlabeled" translatable="false">Unlabeled</string>
-  <string name="category_llm" translatable="false">LLM</string>
-  <string name="category_agents" translatable="false">Agents</string>
-  <string name="category_classical_ml" translatable="false">Classical ML</string>
-  <string name="category_experimental" translatable="false">Experimental</string>
+  <string name="category_llm" translatable="false">Clinical Intelligence</string>
+  <string name="category_agents" translatable="false">Security Agents</string>
+  <string name="category_classical_ml" translatable="false">Research Models</string>
+  <string name="category_experimental" translatable="false">Lab Simulations</string>
   <string name="chat_textinput_placeholder" translatable="false">Type message…</string>
   <string name="chat_you" translatable="false">You</string>
-  <string name="chat_llm_agent_name" translatable="false">LLM</string>
+  <string name="chat_llm_agent_name" translatable="false">Airgap AI</string>
   <string name="show_thinking" translatable="false">Show thinking</string>
   <string name="checking_access" translatable="false">Checking access...</string>
   <string name="close" translatable="false">Close</string>
@@ -88,10 +88,10 @@
   <string name="done" translatable="false">Done</string>
   <string name="download" translatable="false">Download</string>
   <string name="downloaded_size" translatable="false">%1$s downloaded</string>
-  <string name="drawer_settings_label" translatable="false">Settings</string>
-  <string name="drawer_settings_description" translatable="false">Manage application settings</string>
-  <string name="drawer_models_label" translatable="false">Models</string>
-  <string name="drawer_models_description" translatable="false">Browse, try, and benchmark models</string>
+  <string name="drawer_settings_label" translatable="false">Security Settings</string>
+  <string name="drawer_settings_description" translatable="false">Configure privacy and local compute</string>
+  <string name="drawer_models_label" translatable="false">Intelligence Core</string>
+  <string name="drawer_models_description" translatable="false">Manage and deploy localized model nodes</string>
   <string name="edit" translatable="false">Edit</string>
   <string name="edit_secret" translatable="false">Edit secret</string>
   <string name="enter_instruction" translatable="false">Enter instruction</string>
@@ -227,8 +227,8 @@
   <string name="mobile_actions_challenge_load_model" translatable="false">Load Model</string>
 
   <!-- Strings for skills -->
-  <string name="aichat_emptystate_title" translatable="false">AI Chat</string>
-  <string name="aichat_emptystate_content" translatable="false">Chat with on-device large language models.</string>
+  <string name="aichat_emptystate_title" translatable="false">Secure Consultation</string>
+  <string name="aichat_emptystate_content" translatable="false">Analyze patient data and clinical research privately on-device.</string>
   <string name="add_script" translatable="false">Add script</string>
   <string name="add_default_script" translatable="false">Add default script</string>
   <string name="add_skill" translatable="false">Add skill</string>
