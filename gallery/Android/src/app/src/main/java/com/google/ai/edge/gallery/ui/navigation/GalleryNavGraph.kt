@@ -42,6 +42,7 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -81,17 +82,20 @@ import com.google.ai.edge.gallery.ui.common.ErrorDialog
 import com.google.ai.edge.gallery.ui.common.ModelPageAppBar
 import com.google.ai.edge.gallery.ui.home.HomeScreen
 import com.google.ai.edge.gallery.ui.home.PromoScreenGm4
-import com.google.ai.edge.gallery.ui.common.chat.ModelDownloadStatusInfoPanel
-import com.google.ai.edge.gallery.ui.common.chat.ZeroTrustSecurityPanel
-import com.google.ai.edge.gallery.ui.modelmanager.GlobalModelManager
-import com.google.ai.edge.gallery.ui.modelmanager.ModelInitializationStatusType
-import com.google.ai.edge.gallery.ui.modelmanager.ModelManager
-import com.google.ai.edge.gallery.ui.modelmanager.ModelManagerViewModel
+import com.google.ai.edge.gallery.ui.common.chat.ChatHistorySidebar
+import com.google.ai.edge.gallery.ui.common.chat.ChatMessageLoading
+import com.google.ai.edge.gallery.ui.common.chat.ChatSide
+import com.google.ai.edge.gallery.ui.llmchat.LlmChatViewModelBase
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.rememberDrawerState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private const val TAG = "AGGalleryNavGraph"
+private const val ROUTE_CHAT_DIRECT = "chat_direct"
 private const val ROUTE_HOMESCREEN = "homepage"
 private const val ROUTE_MODEL_LIST = "model_list"
 private const val ROUTE_MODEL = "route_model"
@@ -184,10 +188,34 @@ fun GalleryNavHost(
 
   NavHost(
     navController = navController,
-    startDestination = ROUTE_HOMESCREEN,
+    startDestination = ROUTE_CHAT_DIRECT,
     enterTransition = { EnterTransition.None },
     exitTransition = { ExitTransition.None },
   ) {
+    // Chat Direct entry point.
+    composable(route = ROUTE_CHAT_DIRECT) {
+      val uiState by modelManagerViewModel.uiState.collectAsState()
+      val context = LocalContext.current
+      
+      LaunchedEffect(uiState.loadingModelAllowlist) {
+        if (!uiState.loadingModelAllowlist) {
+          val task = modelManagerViewModel.getTaskById(BuiltInTaskId.LLM_CHAT)
+          if (task != null) {
+            val model = task.models.firstOrNull { it.name.contains("Gemma", ignoreCase = true) } ?: task.models.firstOrNull()
+            if (model != null) {
+              navController.navigate("$ROUTE_MODEL/${task.id}/${model.name}") {
+                popUpTo(ROUTE_CHAT_DIRECT) { inclusive = true }
+              }
+            }
+          }
+        }
+      }
+      
+      Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator()
+      }
+    }
+
     // Home screen.
     composable(route = ROUTE_HOMESCREEN) {
       // Create a state to trigger PromoScreen fade in animation.
@@ -324,36 +352,57 @@ fun GalleryNavHost(
             var disableAppBarControls by remember { mutableStateOf(false) }
             var hideTopBar by remember { mutableStateOf(false) }
             var customNavigateUpCallback by remember { mutableStateOf<(() -> Unit)?>(null) }
-            CustomTaskScreen(
-              task = customTask.task,
-              modelManagerViewModel = modelManagerViewModel,
-              onNavigateUp = {
-                if (customNavigateUpCallback != null) {
-                  customNavigateUpCallback?.invoke()
-                } else {
-                  enableModelListAnimation = false
-                  lastNavigatedModelName = ""
-                  navController.navigateUp()
-
-                  // clean up all models.
-                  for (curModel in customTask.task.models) {
-                    val instanceToCleanUp = curModel.instance
-                    scope.launch(Dispatchers.Default) {
-                      modelManagerViewModel.cleanupModel(
-                        context = context,
-                        task = customTask.task,
-                        model = curModel,
-                        instanceToCleanUp = instanceToCleanUp,
-                      )
+            
+            val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+            val isChatTask = customTask.task.id == BuiltInTaskId.LLM_CHAT
+            
+            ModalNavigationDrawer(
+              drawerState = drawerState,
+              gesturesEnabled = isChatTask && !disableAppBarControls,
+              drawerContent = {
+                if (isChatTask) {
+                  ChatHistorySidebar(
+                    dataStoreRepository = modelManagerViewModel.dataStoreRepository,
+                    onSessionClicked = { session ->
+                      scope.launch {
+                        drawerState.close()
+                        // Find the ViewModel associated with this task
+                        val vm = hiltViewModel<LlmChatViewModel>(backStackEntry)
+                        vm.loadSession(session, initialModel, customTask.task)
+                      }
+                    },
+                    onNewChatClicked = {
+                      scope.launch {
+                        drawerState.close()
+                        val vm = hiltViewModel<LlmChatViewModel>(backStackEntry)
+                        vm.clearAllMessages(initialModel)
+                      }
+                    },
+                    onDeleteSession = { session ->
+                      modelManagerViewModel.dataStoreRepository.deleteChatSession(session.id)
                     }
-                  }
+                  )
                 }
-              },
-              disableAppBarControls = disableAppBarControls,
-              hideTopBar = hideTopBar,
-              useThemeColor = customTask.task.useThemeColor,
-              onSecurityClicked = { showZeroTrustPanel = true },
-            ) { bottomPadding ->
+              }
+            ) {
+              CustomTaskScreen(
+                task = customTask.task,
+                modelManagerViewModel = modelManagerViewModel,
+                onNavigateUp = {
+                  if (customNavigateUpCallback != null) {
+                    customNavigateUpCallback?.invoke()
+                  } else {
+                    enableModelListAnimation = false
+                    lastNavigatedModelName = ""
+                    navController.navigateUp()
+                  }
+                },
+                disableAppBarControls = disableAppBarControls,
+                hideTopBar = hideTopBar,
+                useThemeColor = customTask.task.useThemeColor,
+                onSecurityClicked = { showZeroTrustPanel = true },
+                onMenuClicked = if (isChatTask) { { scope.launch { drawerState.open() } } } else null,
+              ) { bottomPadding ->
               customTask.MainScreen(
                 data =
                   CustomTaskData(
@@ -368,6 +417,7 @@ fun GalleryNavHost(
           }
         }
       }
+    }
     }
 
     // Global model manager page.
@@ -470,6 +520,7 @@ private fun CustomTaskScreen(
   useThemeColor: Boolean,
   onNavigateUp: () -> Unit,
   onSecurityClicked: (() -> Unit)? = null,
+  onMenuClicked: (() -> Unit)? = null,
   content: @Composable (bottomPadding: Dp) -> Unit,
 ) {
   val modelManagerUiState by modelManagerViewModel.uiState.collectAsState()
@@ -528,6 +579,7 @@ private fun CustomTaskScreen(
           onConfigChanged = { _, _ -> },
           onBackClicked = { handleNavigateUp() },
           onSecurityClicked = onSecurityClicked,
+          onMenuClicked = onMenuClicked,
           onModelSelected = { prevModel, newSelectedModel ->
             val instanceToCleanUp = prevModel.instance
             scope.launch(Dispatchers.Default) {

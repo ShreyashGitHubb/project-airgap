@@ -25,6 +25,7 @@ import com.google.ai.edge.gallery.AppLifecycleProvider
 import com.google.ai.edge.gallery.BenchmarkResultsSerializer
 import com.google.ai.edge.gallery.CutoutsSerializer
 import com.google.ai.edge.gallery.GalleryLifecycleProvider
+import com.google.ai.edge.gallery.HistorySerializer
 import com.google.ai.edge.gallery.SettingsSerializer
 import com.google.ai.edge.gallery.SkillsSerializer
 import com.google.ai.edge.gallery.UserDataSerializer
@@ -33,6 +34,7 @@ import com.google.ai.edge.gallery.data.DefaultDataStoreRepository
 import com.google.ai.edge.gallery.data.DefaultDownloadRepository
 import com.google.ai.edge.gallery.data.DownloadRepository
 import com.google.ai.edge.gallery.proto.BenchmarkResults
+import com.google.ai.edge.gallery.proto.ChatHistory
 import com.google.ai.edge.gallery.proto.CutoutCollection
 import com.google.ai.edge.gallery.proto.Settings
 import com.google.ai.edge.gallery.proto.Skills
@@ -81,6 +83,13 @@ internal object AppModule {
   @Singleton
   fun provideSkillsSerializer(): Serializer<Skills> {
     return SkillsSerializer
+  }
+
+  // Provides the HistorySerializer
+  @Provides
+  @Singleton
+  fun provideHistorySerializer(): Serializer<ChatHistory> {
+    return HistorySerializer
   }
 
   // Provides DataStore<Settings>
@@ -148,6 +157,19 @@ internal object AppModule {
     )
   }
 
+  // Provides DataStore<ChatHistory>
+  @Provides
+  @Singleton
+  fun provideHistoryDataStore(
+    @ApplicationContext context: Context,
+    historySerializer: Serializer<ChatHistory>,
+  ): DataStore<ChatHistory> {
+    return DataStoreFactory.create(
+      serializer = historySerializer,
+      produceFile = { context.dataStoreFile("chat_history.pb") },
+    )
+  }
+
   // Provides AppLifecycleProvider
   @Provides
   @Singleton
@@ -164,6 +186,7 @@ internal object AppModule {
     cutoutsDataStore: DataStore<CutoutCollection>,
     benchmarkResultsStore: DataStore<BenchmarkResults>,
     skillsDataStore: DataStore<Skills>,
+    historyDataStore: DataStore<ChatHistory>,
   ): DataStoreRepository {
     return DefaultDataStoreRepository(
       dataStore,
@@ -171,6 +194,7 @@ internal object AppModule {
       cutoutsDataStore,
       benchmarkResultsStore,
       skillsDataStore,
+      historyDataStore,
     )
   }
 

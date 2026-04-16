@@ -22,6 +22,8 @@ import com.google.ai.edge.gallery.proto.BenchmarkResult
 import com.google.ai.edge.gallery.proto.BenchmarkResults
 import com.google.ai.edge.gallery.proto.Cutout
 import com.google.ai.edge.gallery.proto.CutoutCollection
+import com.google.ai.edge.gallery.proto.ChatHistory
+import com.google.ai.edge.gallery.proto.ChatSession
 import com.google.ai.edge.gallery.proto.ImportedModel
 import com.google.ai.edge.gallery.proto.Settings
 import com.google.ai.edge.gallery.proto.Skill
@@ -109,6 +111,12 @@ interface DataStoreRepository {
 
   /** Returns whether a promo with the specified ID has been viewed. */
   fun hasViewedPromo(promoId: String): Boolean
+
+  fun saveChatSession(session: ChatSession)
+
+  fun getAllChatSessions(): List<ChatSession>
+
+  fun deleteChatSession(sessionId: String)
 }
 
 /** Repository for managing data using Proto DataStore. */
@@ -118,6 +126,7 @@ class DefaultDataStoreRepository(
   private val cutoutDataStore: DataStore<CutoutCollection>,
   private val benchmarkResultsDataStore: DataStore<BenchmarkResults>,
   private val skillsDataStore: DataStore<Skills>,
+  private val historyDataStore: DataStore<ChatHistory>,
 ) : DataStoreRepository {
   override fun saveTextInputHistory(history: List<String>) {
     runBlocking {
@@ -431,6 +440,36 @@ class DefaultDataStoreRepository(
     return runBlocking {
       val settings = dataStore.data.first()
       settings.viewedPromoIdList.contains(promoId)
+    }
+  }
+
+  override fun saveChatSession(session: ChatSession) {
+    runBlocking {
+      historyDataStore.updateData { history ->
+        val sessions = history.sessionsList.toMutableList()
+        val index = sessions.indexOfFirst { it.id == session.id }
+        if (index >= 0) {
+          sessions[index] = session
+        } else {
+          sessions.add(0, session)
+        }
+        ChatHistory.newBuilder().addAllSessions(sessions).build()
+      }
+    }
+  }
+
+  override fun getAllChatSessions(): List<ChatSession> {
+    return runBlocking {
+      historyDataStore.data.first().sessionsList
+    }
+  }
+
+  override fun deleteChatSession(sessionId: String) {
+    runBlocking {
+      historyDataStore.updateData { history ->
+        val sessions = history.sessionsList.filter { it.id != sessionId }
+        ChatHistory.newBuilder().addAllSessions(sessions).build()
+      }
     }
   }
 }

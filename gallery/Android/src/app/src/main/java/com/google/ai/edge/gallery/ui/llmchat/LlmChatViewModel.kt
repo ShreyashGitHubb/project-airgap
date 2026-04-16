@@ -16,41 +16,24 @@
 
 package com.google.ai.edge.gallery.ui.llmchat
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.util.Log
-import androidx.lifecycle.viewModelScope
-import com.google.ai.edge.gallery.data.ConfigKeys
-import com.google.ai.edge.gallery.data.Model
-import com.google.ai.edge.gallery.data.Task
-import com.google.ai.edge.gallery.runtime.runtimeHelper
-import com.google.ai.edge.gallery.ui.common.chat.ChatMessageAudioClip
-import com.google.ai.edge.gallery.ui.common.chat.ChatMessageError
-import com.google.ai.edge.gallery.ui.common.chat.ChatMessageLoading
-import com.google.ai.edge.gallery.ui.common.chat.ChatMessageText
-import com.google.ai.edge.gallery.ui.common.chat.ChatMessageThinking
-import com.google.ai.edge.gallery.ui.common.chat.ChatMessageType
-import com.google.ai.edge.gallery.ui.common.chat.ChatMessageWarning
-import com.google.ai.edge.gallery.ui.common.chat.ChatSide
-import com.google.ai.edge.gallery.ui.common.chat.ChatViewModel
-import com.google.ai.edge.gallery.ui.modelmanager.ModelManagerViewModel
-import com.google.ai.edge.litertlm.Contents
-import com.google.ai.edge.litertlm.ExperimentalApi
-import com.google.ai.edge.litertlm.ToolProvider
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import com.google.ai.edge.gallery.data.MedicalSkill
-import com.google.ai.edge.gallery.data.MedicalSkillsProvider
+import com.google.ai.edge.gallery.data.DataStoreRepository
+import com.google.ai.edge.gallery.proto.ChatMessageProto
+import com.google.ai.edge.gallery.proto.ChatSession
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 private const val TAG = "AGLlmChatViewModel"
 
 @OptIn(ExperimentalApi::class)
-open class LlmChatViewModelBase() : ChatViewModel() {
+open class LlmChatViewModelBase(
+  val dataStoreRepository: DataStoreRepository
+) : ChatViewModel() {
+  private var currentSessionId: String = UUID.randomUUID().toString()
+  private var currentModelName: String = ""
+  private var currentTaskId: String = ""
+
   private val _currentMedicalSkill = MutableStateFlow(MedicalSkillsProvider.getDefaultSkill())
   val currentMedicalSkill = _currentMedicalSkill.asStateFlow()
 
@@ -62,6 +45,8 @@ open class LlmChatViewModelBase() : ChatViewModel() {
     supportAudio: Boolean = false
   ) {
     _currentMedicalSkill.value = skill
+    currentModelName = model.name
+    currentTaskId = task.id
     resetSession(
       task = task,
       model = model,
@@ -69,6 +54,63 @@ open class LlmChatViewModelBase() : ChatViewModel() {
       supportImage = supportImage,
       supportAudio = supportAudio
     )
+  }
+
+  fun loadSession(session: ChatSession, model: Model, task: Task) {
+    currentSessionId = session.id
+    currentModelName = session.modelName
+    currentTaskId = session.taskId
+    clearAllMessages(model)
+    
+    // Map proto messages to UI messages
+    session.messagesList.forEach { msg ->
+      val chatSide = when(msg.side) {
+        "USER" -> ChatSide.USER
+        "AGENT" -> ChatSide.AGENT
+        else -> ChatSide.SYSTEM
+      }
+      
+      val chatMessage = when(msg.type) {
+        "THINKING" -> ChatMessageThinking(content = msg.content, inProgress = false, side = chatSide, accelerator = msg.accelerator)
+        else -> ChatMessageText(content = msg.content, side = chatSide, latencyMs = msg.latencyMs, accelerator = msg.accelerator)
+      }
+      addMessage(model, chatMessage)
+    }
+  }
+
+  private fun saveCurrentSession(model: Model) {
+    val messages = uiState.value.messagesByModel[model.name] ?: return
+    val protoMessages = messages.mapNotNull { msg ->
+      val content = when(msg) {
+        is ChatMessageText -> msg.content
+        is ChatMessageThinking -> msg.content
+        else -> null
+      } ?: return@mapNotNull null
+      
+      ChatMessageProto.newBuilder()
+        .setSide(msg.side.name)
+        .setType(msg.type.name)
+        .setContent(content)
+        .setTimestamp(System.currentTimeMillis())
+        .setLatencyMs(msg.latencyMs)
+        .setAccelerator(msg.accelerator)
+        .build()
+    }
+
+    if (protoMessages.isEmpty()) return
+
+    val title = protoMessages.firstOrNull { it.side == "USER" }?.content?.take(30) ?: "New Analysis"
+    
+    val session = ChatSession.newBuilder()
+      .setId(currentSessionId)
+      .setTitle(title)
+      .setTimestamp(System.currentTimeMillis())
+      .addAllMessages(protoMessages)
+      .setModelName(currentModelName)
+      .setTaskId(currentTaskId)
+      .build()
+    
+    dataStoreRepository.saveChatSession(session)
   }
 
   fun generateResponse(
@@ -98,6 +140,7 @@ open class LlmChatViewModelBase() : ChatViewModel() {
         model = model,
         message = ChatMessageLoading(accelerator = accelerator, extraProgressLabel = progressLabel)
       )
+      saveCurrentSession(model)
 
       // Wait for instance to be initialized.
       while (model.instance == null) {
@@ -227,6 +270,7 @@ open class LlmChatViewModelBase() : ChatViewModel() {
                   }
                 }
                 setInProgress(false)
+                saveCurrentSession(model)
                 onDone()
               }
             }
@@ -293,6 +337,7 @@ open class LlmChatViewModelBase() : ChatViewModel() {
       setIsResettingSession(true)
       clearAllMessages(model = model)
       stopResponse(model = model)
+      currentSessionId = UUID.randomUUID().toString()
 
       while (true) {
         try {
@@ -375,8 +420,14 @@ open class LlmChatViewModelBase() : ChatViewModel() {
   }
 }
 
-@HiltViewModel class LlmChatViewModel @Inject constructor() : LlmChatViewModelBase()
+@HiltViewModel class LlmChatViewModel @Inject constructor(
+  dataStoreRepository: DataStoreRepository
+) : LlmChatViewModelBase(dataStoreRepository)
 
-@HiltViewModel class LlmAskImageViewModel @Inject constructor() : LlmChatViewModelBase()
+@HiltViewModel class LlmAskImageViewModel @Inject constructor(
+  dataStoreRepository: DataStoreRepository
+) : LlmChatViewModelBase(dataStoreRepository)
 
-@HiltViewModel class LlmAskAudioViewModel @Inject constructor() : LlmChatViewModelBase()
+@HiltViewModel class LlmAskAudioViewModel @Inject constructor(
+  dataStoreRepository: DataStoreRepository
+) : LlmChatViewModelBase(dataStoreRepository)
