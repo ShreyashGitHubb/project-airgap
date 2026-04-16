@@ -30,7 +30,9 @@ import com.google.ai.edge.gallery.proto.Skill
 import com.google.ai.edge.gallery.proto.Skills
 import com.google.ai.edge.gallery.proto.Theme
 import com.google.ai.edge.gallery.proto.UserData
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 
 // TODO(b/423700720): Change to async (suspend) functions
@@ -114,7 +116,7 @@ interface DataStoreRepository {
 
   fun saveChatSession(session: ChatSession)
 
-  fun getAllChatSessions(): List<ChatSession>
+  fun getAllChatSessions(): Flow<List<ChatSession>>
 
   fun deleteChatSession(sessionId: String)
 }
@@ -458,10 +460,8 @@ class DefaultDataStoreRepository(
     }
   }
 
-  override fun getAllChatSessions(): List<ChatSession> {
-    return runBlocking {
-      historyDataStore.data.first().sessionsList
-    }
+  override fun getAllChatSessions(): Flow<List<ChatSession>> {
+    return historyDataStore.data.map { it.sessionsList }
   }
 
   override fun deleteChatSession(sessionId: String) {

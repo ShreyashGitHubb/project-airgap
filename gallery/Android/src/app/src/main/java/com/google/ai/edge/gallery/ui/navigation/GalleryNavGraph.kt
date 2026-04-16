@@ -54,12 +54,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -73,6 +75,8 @@ import androidx.navigation.navArgument
 import com.google.ai.edge.gallery.GalleryEvent
 import com.google.ai.edge.gallery.customtasks.common.CustomTaskData
 import com.google.ai.edge.gallery.customtasks.common.CustomTaskDataForBuiltinTask
+import com.google.ai.edge.gallery.data.BuiltInTaskId
+import com.google.ai.edge.gallery.data.Model
 import com.google.ai.edge.gallery.data.ModelDownloadStatusType
 import com.google.ai.edge.gallery.data.Task
 import com.google.ai.edge.gallery.data.isLegacyTasks
@@ -85,11 +89,20 @@ import com.google.ai.edge.gallery.ui.home.PromoScreenGm4
 import com.google.ai.edge.gallery.ui.common.chat.ChatHistorySidebar
 import com.google.ai.edge.gallery.ui.common.chat.ChatMessageLoading
 import com.google.ai.edge.gallery.ui.common.chat.ChatSide
+import com.google.ai.edge.gallery.ui.llmchat.LlmChatViewModel
+import com.google.ai.edge.gallery.ui.llmchat.LlmChatScreen
 import com.google.ai.edge.gallery.ui.llmchat.LlmChatViewModelBase
+import com.google.ai.edge.gallery.ui.modelmanager.ModelManagerViewModel
+import com.google.ai.edge.gallery.ui.modelmanager.GlobalModelManager
+import com.google.ai.edge.gallery.ui.modelmanager.ModelInitializationStatus
+import com.google.ai.edge.gallery.ui.modelmanager.ModelInitializationStatusType
+import com.google.ai.edge.gallery.ui.common.chat.ZeroTrustSecurityPanel
+import com.google.ai.edge.gallery.ui.common.chat.ModelDownloadStatusInfoPanel
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.Text
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -301,7 +314,7 @@ fun GalleryNavHost(
           viewModel = modelManagerViewModel,
           task = it,
           enableAnimation = enableModelListAnimation,
-          onModelClicked = { model ->
+          onModelClicked = { model: com.google.ai.edge.gallery.data.Model ->
             navController.navigate("$ROUTE_MODEL/${it.id}/${model.name}")
           },
           navigateUp = {
@@ -361,21 +374,20 @@ fun GalleryNavHost(
               gesturesEnabled = isChatTask && !disableAppBarControls,
               drawerContent = {
                 if (isChatTask) {
+                  val llmChatViewModel: LlmChatViewModel = hiltViewModel(backStackEntry)
+
                   ChatHistorySidebar(
                     dataStoreRepository = modelManagerViewModel.dataStoreRepository,
                     onSessionClicked = { session ->
                       scope.launch {
                         drawerState.close()
-                        // Find the ViewModel associated with this task
-                        val vm = hiltViewModel<LlmChatViewModel>(backStackEntry)
-                        vm.loadSession(session, initialModel, customTask.task)
+                        llmChatViewModel.loadSession(session, initialModel, customTask.task)
                       }
                     },
                     onNewChatClicked = {
                       scope.launch {
                         drawerState.close()
-                        val vm = hiltViewModel<LlmChatViewModel>(backStackEntry)
-                        vm.clearAllMessages(initialModel)
+                        llmChatViewModel.clearAllMessages(initialModel)
                       }
                     },
                     onDeleteSession = { session ->
@@ -385,39 +397,46 @@ fun GalleryNavHost(
                 }
               }
             ) {
-              CustomTaskScreen(
-                task = customTask.task,
-                modelManagerViewModel = modelManagerViewModel,
-                onNavigateUp = {
-                  if (customNavigateUpCallback != null) {
-                    customNavigateUpCallback?.invoke()
-                  } else {
+              if (isChatTask) {
+                LlmChatScreen(
+                  modelManagerViewModel = modelManagerViewModel,
+                  navigateUp = {
                     enableModelListAnimation = false
                     lastNavigatedModelName = ""
                     navController.navigateUp()
+                  },
+                  taskId = taskId,
+                  onSkillClicked = { scope.launch { drawerState.open() } }
+                )
+              } else {
+                CustomTaskScreen(
+                  task = customTask.task,
+                  modelManagerViewModel = modelManagerViewModel,
+                  onNavigateUp = {
+                    if (customNavigateUpCallback != null) {
+                      customNavigateUpCallback?.invoke()
+                    } else {
+                      enableModelListAnimation = false
+                      lastNavigatedModelName = ""
+                      navController.navigateUp()
+                    }
+                  },
+                  disableAppBarControls = disableAppBarControls,
+                  hideTopBar = hideTopBar,
+                  useThemeColor = customTask.task.useThemeColor,
+                  onSecurityClicked = { showZeroTrustPanel = true },
+                  onMenuClicked = { scope.launch { drawerState.open() } }
+                ) {
+                  // This is a placeholder for custom tasks that don't have a specialized screen
+                  Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Unsupported Task UI")
                   }
-                },
-                disableAppBarControls = disableAppBarControls,
-                hideTopBar = hideTopBar,
-                useThemeColor = customTask.task.useThemeColor,
-                onSecurityClicked = { showZeroTrustPanel = true },
-                onMenuClicked = if (isChatTask) { { scope.launch { drawerState.open() } } } else null,
-              ) { bottomPadding ->
-              customTask.MainScreen(
-                data =
-                  CustomTaskData(
-                    modelManagerViewModel = modelManagerViewModel,
-                    bottomPadding = bottomPadding,
-                    setAppBarControlsDisabled = { disableAppBarControls = it },
-                    setTopBarVisible = { hideTopBar = !it },
-                    setCustomNavigateUpCallback = { customNavigateUpCallback = it },
-                  )
-              )
+                }
+              }
             }
           }
         }
       }
-    }
     }
 
     // Global model manager page.
@@ -450,15 +469,15 @@ fun GalleryNavHost(
           enableHomeScreenAnimation = false
           navController.navigateUp()
         },
-        onModelSelected = { task, model ->
+        onModelSelected = { task: com.google.ai.edge.gallery.data.Task, model: com.google.ai.edge.gallery.data.Model ->
           navController.navigate("$ROUTE_MODEL/${task.id}/${model.name}")
         },
-        onBenchmarkClicked = { model ->
+        onBenchmarkClicked = { benchmarkModel: com.google.ai.edge.gallery.data.Model ->
           firebaseAnalytics?.logEvent(
             GalleryEvent.CAPABILITY_SELECT.id,
-            Bundle().apply { putString("capability_name", "benchmark_${model.name}") },
+            Bundle().apply { putString("capability_name", "benchmark_${benchmarkModel.name}") },
           )
-          navController.navigate("$ROUTE_BENCHMARK/${model.name}")
+          navController.navigate("$ROUTE_BENCHMARK/${benchmarkModel.name}")
         },
       )
     }
