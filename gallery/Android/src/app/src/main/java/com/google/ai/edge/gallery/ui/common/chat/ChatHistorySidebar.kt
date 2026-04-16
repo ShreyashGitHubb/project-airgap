@@ -102,7 +102,7 @@ fun ChatHistorySidebar(
         icon = { Icon(Icons.Rounded.Add, contentDescription = null) },
         colors = NavigationDrawerItemDefaults.colors(
           unselectedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
-          unselectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+          unselectedTextColor = MaterialTheme.colorScheme.onPrimaryContainer
         ),
         shape = MaterialTheme.shapes.medium,
         modifier = Modifier.padding(bottom = 16.dp)

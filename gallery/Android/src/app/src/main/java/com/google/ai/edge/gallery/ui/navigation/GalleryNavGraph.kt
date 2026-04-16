@@ -94,6 +94,7 @@ import com.google.ai.edge.gallery.ui.llmchat.LlmChatScreen
 import com.google.ai.edge.gallery.ui.llmchat.LlmChatViewModelBase
 import com.google.ai.edge.gallery.ui.modelmanager.ModelManagerViewModel
 import com.google.ai.edge.gallery.ui.modelmanager.GlobalModelManager
+import com.google.ai.edge.gallery.ui.modelmanager.ModelManager
 import com.google.ai.edge.gallery.ui.modelmanager.ModelInitializationStatus
 import com.google.ai.edge.gallery.ui.modelmanager.ModelInitializationStatusType
 import com.google.ai.edge.gallery.ui.common.chat.ZeroTrustSecurityPanel
